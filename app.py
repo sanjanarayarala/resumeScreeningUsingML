@@ -46,3 +46,58 @@ word_vectorizer = TfidfVectorizer(max_features= 1600)
 X_train = word_vectorizer.fit_transform(X_train)
 X_test = word_vectorizer.transform(X_test)
 
+mnb = MultinomialNB()
+lr = LogisticRegression()
+dt = DecisionTreeClassifier()
+rf = RandomForestClassifier()
+lsvm = LinearSVC()
+sgd = SGDClassifier()
+knn = KNeighborsClassifier()
+
+for clf in (mnb, lsvm, lr, knn, sgd, dt, rf):
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    print(clf.__class__.__name__, accuracy_score(y_test, y_pred))
+
+dt.fit(X_train, y_train)
+dt_predicted = dt.predict(X_test)
+
+def pdf2text(pdf_file):
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    full_text = ''
+    for page_num in range(len(pdf_reader.pages)):
+        page = pdf_reader.pages[page_num]
+        full_text += page.extract_text()
+    return full_text
+
+def ml_prediction(text):
+    clean_text = cleanResume(text)
+    tokenized_text = tokenize_sentence(clean_text)
+    word_features = word_vectorizer.transform([tokenized_text])
+    ypred = dt.predict(word_features)
+    decoded_op = lenc.inverse_transform(ypred)
+    return decoded_op[0]
+
+def main():
+    st.title('Resume Screening using Machine Learning Models')
+
+    uploaded_file = st.file_uploader('Upload a PDF version of resume', type='pdf')
+    st.write('\n')
+    st.write('\n')
+
+    if uploaded_file is not None:
+        text = pdf2text(uploaded_file) 
+        predictions = ml_prediction(text) 
+
+        if predictions is not None:
+
+            st.subheader('This resume belongs to job category - ')
+            st.write(predictions)
+
+        else:
+            st.subheader('Could not predict the job category of resume')
+
+if __name__ == '__main__':
+    main()
+
+
