@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .upload-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #004494;
+        }
+
+        .output {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #0056b3;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        .job-link {
+            margin-top: 15px;
+            display: block;
+            background-color: #4285f4;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .job-link:hover {
+            background-color: #3367d6;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h2>Upload Your Resume</h2>
+        <input type="file" id="resumeUpload" accept=".pdf">
+        <button onclick="uploadResume()">Classify Resume</button>
+        <div id="output" class="output"></div>
+    </div>
+    <script>
+        function uploadResume() {
+            let fileInput = document.getElementById('resumeUpload');
+            let file = fileInput.files[0];
+            let formData = new FormData();
+            formData.append('resume', file);
+
+            fetch('http://127.0.0.1:5000/classify', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                let classification = data.classification;
+                document.getElementById('output').innerText = 'Classification: ' + classification;
+
+                // Create a Google search link for job postings
+                let jobSearchUrl = `https://www.google.com/search?q=jobs+near+me+${encodeURIComponent(classification)}`;
+                let jobLink = document.createElement('a');
+                jobLink.href = jobSearchUrl;
+                jobLink.className = 'job-link';
+                jobLink.target = '_blank';
+                jobLink.innerText = 'View job postings for ' + classification;
+
+                document.getElementById('output').appendChild(jobLink);
+            
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
+
+
